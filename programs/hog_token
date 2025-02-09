@@ -1,0 +1,3 @@
+git add .
+git commit -m "Добавлен смарт-контракт токена HOG"
+git push origin main
