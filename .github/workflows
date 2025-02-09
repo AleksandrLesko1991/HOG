@@ -1,1 +1,38 @@
-deploy.yml
+deploy.ymlname: Deploy to Solana
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install Solana CLI
+        run: |
+          sh -c "$(curl -sSfL https://release.solana.com/stable/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+          solana --version
+
+      - name: Set up Solana
+        run: |
+          solana config set --url https://api.mainnet-beta.solana.com
+          echo "$SOLANA_PRIVATE_KEY" > ~/.config/solana/id.json
+        env:
+          SOLANA_PRIVATE_KEY: ${{ secrets.SOLANA_PRIVATE_KEY }}
+
+      - name: Install Anchor
+        run: |
+          cargo install --git https://github.com/coral-xyz/anchor anchor-cli --locked
+          anchor --version
+
+      - name: Deploy contract
+        run: |
+          anchor build
+          solana program deploy target/deploy/hog_token.so
+
